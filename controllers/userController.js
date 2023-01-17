@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongoose").Types;
-const { User, Course } = require("../models");
+const { User, thought } = require("../models");
 
 // Aggregate function to get the number of Users overall
 const headCount = async () =>
@@ -12,11 +12,12 @@ module.exports = {
   getUsers(req, res) {
     User.find()
       .then(async (users) => {
-        const userObj = {
-          users,
-          headCount: await headCount(),
-        };
-        return res.json(userObj);
+        // const userObj = {
+        //   users,
+        //   headCount: await headCount(),
+        // };
+
+        return res.json(users);
       })
       .catch((err) => {
         console.log(err);
@@ -25,15 +26,14 @@ module.exports = {
   },
   // Get a singleUser
   getSingleUser(req, res) {
-   User.findOne({ _id: req.params.userId })
+    User.findOne({ _id: req.params.userId })
       .select("-__v")
       .then(async (user) =>
         !user
           ? res.status(404).json({ message: "NoUser with that ID" })
-          : res.json({
-             User,
-              grade: await grade(req.params.userId),
-            })
+          : res.json(
+            user
+          )
       )
       .catch((err) => {
         console.log(err);
@@ -42,26 +42,26 @@ module.exports = {
   },
   // create a newUser
   createUser(req, res) {
-   User.create(req.body)
+    User.create(req.body)
       .then((user) => res.json(user))
       .catch((err) => res.status(500).json(err));
   },
-  // Delete a User and remove them from the course
+  // Delete a User and remove them from the thought
   deleteUser(req, res) {
-   User.findOneAndRemove({ _id: req.params.userId })
+    User.findOneAndRemove({ _id: req.params.userId })
       .then((user) =>
         !user
           ? res.status(404).json({ message: "No suchUser exists" })
-          : Course.findOneAndUpdate(
-              {Users: req.params.userId },
-              { $pull: {Users: req.params.userId } },
+          : thought.findOneAndUpdate(
+              { Users: req.params.userId },
+              { $pull: { Users: req.params.userId } },
               { new: true }
             )
       )
-      .then((course) =>
-        !course
+      .then((thought) =>
+        !thought
           ? res.status(404).json({
-              message: "user deleted, but no courses found",
+              message: "user deleted, but no thoughts found",
             })
           : res.json({ message: "user successfully deleted" })
       )
@@ -75,32 +75,28 @@ module.exports = {
   addAssignment(req, res) {
     console.log("You are adding an assignment");
     console.log(req.body);
-   User.findOneAndUpdate(
+    User.findOneAndUpdate(
       { _id: req.params.userId },
       { $addToSet: { assignments: req.body } },
       { runValidators: true, new: true }
     )
       .then((user) =>
         !user
-          ? res
-              .status(404)
-              .json({ message: "NoUser found with that ID :(" })
+          ? res.status(404).json({ message: "NoUser found with that ID :(" })
           : res.json(user)
       )
       .catch((err) => res.status(500).json(err));
   },
   // Remove assignment from aUser
   removeAssignment(req, res) {
-   User.findOneAndUpdate(
+    User.findOneAndUpdate(
       { _id: req.params.userId },
       { $pull: { assignment: { assignmentId: req.params.assignmentId } } },
       { runValidators: true, new: true }
     )
       .then((user) =>
         !user
-          ? res
-              .status(404)
-              .json({ message: "No User found with that ID :(" })
+          ? res.status(404).json({ message: "No User found with that ID :(" })
           : res.json(user)
       )
       .catch((err) => res.status(500).json(err));
