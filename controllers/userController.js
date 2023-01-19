@@ -46,20 +46,19 @@ module.exports = {
       .then((user) => res.json(user))
       .catch((err) => res.status(500).json(err));
   },
+
+  updateUser(req,res) {
+User.findOneAndUpdate({_id:req.params.userId},{$set:req.body},{runValidators:true,new:true})
+.then((user) => res.json(user))
+.catch((err) => res.status(500).json(err));
+}
+,
   // Delete a User and remove them from the thought
   deleteUser(req, res) {
     User.findOneAndRemove({ _id: req.params.userId })
+     
       .then((user) =>
         !user
-          ? res.status(404).json({ message: "No suchUser exists" })
-          : thought.findOneAndUpdate(
-              { Users: req.params.userId },
-              { $pull: { Users: req.params.userId } },
-              { new: true }
-            )
-      )
-      .then((thought) =>
-        !thought
           ? res.status(404).json({
               message: "user deleted, but no thoughts found",
             })
@@ -72,17 +71,16 @@ module.exports = {
   },
 
   // Add an assignment to aUser
-  addAssignment(req, res) {
-    console.log("You are adding an assignment");
-    console.log(req.body);
+  addFriend(req, res) {
+
     User.findOneAndUpdate(
       { _id: req.params.userId },
-      { $addToSet: { assignments: req.body } },
+      { $addToSet: { friends: req.params.friendsId } },
       { runValidators: true, new: true }
     )
       .then((user) =>
         !user
-          ? res.status(404).json({ message: "NoUser found with that ID :(" })
+          ? res.status(404).json({ message: "No User found with that ID : " })
           : res.json(user)
       )
       .catch((err) => res.status(500).json(err));
@@ -100,5 +98,6 @@ module.exports = {
           : res.json(user)
       )
       .catch((err) => res.status(500).json(err));
+
   },
 };
