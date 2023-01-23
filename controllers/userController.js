@@ -75,7 +75,7 @@ User.findOneAndUpdate({_id:req.params.userId},{$set:req.body},{runValidators:tru
 
     User.findOneAndUpdate(
       { _id: req.params.userId },
-      { $addToSet: { friends: req.params.friendsId } },
+      { $addToSet: { friends: req.params.friendId } },
       { runValidators: true, new: true }
     )
       .then((user) =>
@@ -85,11 +85,11 @@ User.findOneAndUpdate({_id:req.params.userId},{$set:req.body},{runValidators:tru
       )
       .catch((err) => res.status(500).json(err));
   },
-  // Remove assignment from aUser
-  removeAssignment(req, res) {
+  // Remove friend from a User
+  removeFriend(req, res) {
     User.findOneAndUpdate(
       { _id: req.params.userId },
-      { $pull: { assignment: { assignmentId: req.params.assignmentId } } },
+      { $pull: { friends:  req.params.friendId } },
       { runValidators: true, new: true }
     )
       .then((user) =>
